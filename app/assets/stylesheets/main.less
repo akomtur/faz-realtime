@@ -1,0 +1,20 @@
+@border-color: black;
+
+article {
+  min-height: 300px;
+  float: left;
+  margin: 10px;
+  max-width: 300px;
+  display: inline-block;
+  box-shadow: 1px 1px 1px 0px lighten(@border-color, 20%);
+
+  padding: 3px;
+
+  section.teaser {
+    text-align: justify;
+    .published {
+      color: gray;
+    }
+  }
+
+}

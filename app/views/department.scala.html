@@ -1,0 +1,24 @@
+@(department: String, articles : Seq[Article])
+    <script>
+        var CONFIG = {
+            'ws_url' : 'ws://localhost:9000/ws/@department'
+        }
+    </script>
+
+
+@main("department view") {
+    <div ng-controller="ArticlesController">
+        <h1>Show department @department</h1>
+        <article ng-repeat="article in articles">
+            <header>
+                <a href="{{article.url}}">
+                    <div class="teaserImage" ng-show="article.imageUrl"><img ng-src="{{article.imageUrl}}" /></div>
+                    {{article.title}}</a>
+            </header>
+            <section class="teaser">
+                {{article.teaser}}
+                <p class="published">vor {{article.minutesLeft}} Minuten</p>
+            </section>
+        </article>
+    </div>
+}
