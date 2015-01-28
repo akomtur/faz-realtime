@@ -13,9 +13,6 @@ case class SendMessage(department : String, message : String)
 
 class DepartmentsActor extends Actor {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-
   override def receive: Receive = {
     case AddListener(department, listener) => {
       val departmentRef = context.child(department sanitize) match {
@@ -33,7 +30,6 @@ class DepartmentsActor extends Actor {
 
   private def createDepartmentActor(department: String) : ActorRef = {
     val newDepartment = context.actorOf(Props(new DepartmentActor(department)), department sanitize)
-    context.system.scheduler.schedule(0 minutes, 1 minute, newDepartment, UpdateState)
     newDepartment ! UpdateState
     newDepartment
 
