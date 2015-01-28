@@ -17,13 +17,11 @@ object PlacementService extends ArticleJsonConverter {
       .withHeaders("Accept" -> "application/v2.8+json")
       .get()
       .map({ response =>
-        (response.json \ "content").as[Seq[JsValue]] map(_.asOpt[Article])
-      })
-      .map({ articles: Seq[Option[Article]] =>
-      articles
-        .filter(!_.isEmpty)
-        .map(_.get)
-
-      })
+      val entries : Seq[JsValue] = (response.json \ "content").as[Seq[JsValue]];
+      for (
+        entry: JsValue <- entries;
+        article : Article <- entry.asOpt[Article])
+        yield article;
+    })
   }
 }

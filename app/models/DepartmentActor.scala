@@ -2,9 +2,6 @@ package models
 
 import akka.actor._
 
-
-
-
 case class AddChildren(child : ActorRef)
 case class UpdateMessage(article : Article)
 
@@ -18,22 +15,16 @@ class DepartmentActor(name: String) extends Actor {
 
   override def receive: Receive = {
     case AddChildren(children) => context.actorOf(Props(classOf[DepartmentListener], children))
-    case UpdateMessage(message) => {
-      context.children map { child =>
-        child.forward(UpdateMessage(message))
-      }
+    case msg : UpdateMessage => {
+      context.children.foreach(_ ! msg)
     }
-    case Terminated(children) => if(context.children.size == 0) self ! PoisonPill
+    case Terminated(children) => if(context.children.isEmpty) self ! PoisonPill
 
     case UpdateState => {
-      PlacementService.getArticles(name) map { articles : Seq[Article] =>
-        articles map { article => {
-          if(!articleIds.exists(_ equals article.id)) {
-            articleIds = articleIds + article.id
-            self ! UpdateMessage(article)
-          }
-        }}
-      }
+      for(
+        articles <- PlacementService.getArticles(name);
+        article <- articles
+      ) self ! UpdateMessage(article)
     }
 
   }
@@ -42,8 +33,15 @@ class DepartmentActor(name: String) extends Actor {
 class DepartmentListener(user : ActorRef) extends Actor {
   context watch user
 
+  var articleIds : Set[String] = Set.empty
+
   override def receive: Actor.Receive = {
-    case UpdateMessage(message) => user ! UpdateMessage(message)
+    case UpdateMessage(article) => {
+      if(!articleIds.contains(article.id)) {
+        articleIds = articleIds + article.id
+        user ! UpdateMessage(article)
+      }
+    }
     case Terminated(ref) => self ! PoisonPill
   }
 }
